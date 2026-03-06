@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Router Provisioning — Credicentrales</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #0a0e14;
+            --surface: #111820;
+            --border: #1e2d3d;
+            --accent: #00d4ff;
+            --accent2: #00ff9d;
+            --warn: #ff4d6d;
+            --text: #cdd9e5;
+            --muted: #5a7a96;
+            --mono: 'Share Tech Mono', monospace;
+            --sans: 'Barlow', sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            font-weight: 300;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+
+        /* Grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow orb */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.07) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 560px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 2.5rem;
+            animation: fadeDown 0.6s ease both;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 2px;
+            padding: 0.25rem 0.75rem;
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent2);
+            box-shadow: 0 0 8px var(--accent2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            color: #fff;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            margin-top: 0.5rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2rem;
+            position: relative;
+            animation: fadeUp 0.6s ease 0.1s both;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* Section labels */
+        .section-label {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section+.section {
+            margin-top: 1.75rem;
+        }
+
+        /* Fields */
+        .field {
+            margin-bottom: 1.1rem;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.35rem;
+        }
+
+        input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 0.6rem 0.85rem;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input::placeholder {
+            color: var(--muted);
+            opacity: 0.5;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08);
+        }
+
+        input.error {
+            border-color: var(--warn);
+            box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.08);
+        }
+
+        .field-hint {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+        }
+
+        .field-error {
+            font-size: 0.7rem;
+            color: var(--warn);
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .field-error.visible {
+            display: block;
+        }
+
+        /* Two col */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Buttons */
+        .actions {
+            margin-top: 2rem;
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 3px;
+            padding: 0.85rem 1.5rem;
+            font-family: var(--sans);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #29deff;
+            box-shadow: 0 0 24px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent2);
+            border: 1px solid var(--accent2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 255, 157, 0.08);
+            box-shadow: 0 0 24px rgba(0, 255, 157, 0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.99);
+        }
+
+        .btn:disabled {
+            background: var(--border);
+            color: var(--muted);
+            border-color: var(--border);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-text,
+        .btn-loading {
+            transition: opacity 0.2s;
+        }
+
+        .btn-loading {
+            display: none;
+        }
+
+        .btn.loading .btn-text {
+            display: none;
+        }
+
+        .btn.loading .btn-loading {
+            display: inline;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(120%);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.85rem 1.5rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 280px;
+            z-index: 100;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-color: var(--accent2);
+        }
+
+        .toast.success .toast-icon {
+            color: var(--accent2);
+        }
+
+        .toast.fail {
+            border-color: var(--warn);
+        }
+
+        .toast.fail .toast-icon {
+            color: var(--warn);
+        }
+
+        .toast-icon {
+            font-size: 1.1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            animation: fadeUp 0.6s ease 0.2s both;
+        }
+
+        @media (max-width: 480px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-outline-mono {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            text-transform: none;
+            padding: 0.4rem 0.85rem;
+            width: auto;
+            white-space: nowrap;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-outline-mono:hover {
+            color: var(--accent2);
+            border-color: var(--accent2);
+            box-shadow: 0 0 12px rgba(0, 255, 157, 0.1);
+        }
+
+
+        .last-ip-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(0, 255, 157, 0.05);
+            border: 1px solid rgba(0, 255, 157, 0.2);
+            border-radius: 3px;
+            padding: 0.6rem 1rem;
+            margin-bottom: 1rem;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            animation: fadeUp 0.6s ease 0.05s both;
+        }
+
+        .last-ip-label {
+            color: var(--accent2);
+            letter-spacing: 0.08em;
+            white-space: nowrap;
+        }
+
+        .last-ip-value {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .last-ip-hint {
+            color: var(--muted);
+            font-size: 0.65rem;
+            margin-left: auto;
+        }
+
+        .last-ip-bar.loading .last-ip-value {
+            opacity: 0.4;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <div class="badge">Router Provisioning System</div>
+            <div class="title-row">
+                <h1>Device <span>Onboarding</span></h1>
+                <button type="button" id="downloadScriptBtn" class="btn btn-outline-mono"
+                    title="Download onboard script for MikroTik">
+                    ⬇ onboard-script.rsc
+                </button>
+            </div>
+            <p class="subtitle">Register a new router to generate its auto-provision configuration.</p>
+        </div>
+
+        <!-- Last IP Banner -->
+        <div class="last-ip-bar loading" id="lastIpBar">
+            <span class="last-ip-label">// Last IP registered</span>
+            <span class="last-ip-value" id="lastIpValue">fetching...</span>
+            <span class="last-ip-hint" id="lastIpHint"></span>
+        </div>
+
+        <div class="card">
+
+            <form id="provisionForm" novalidate>
+
+                <div class="section">
+                    <div class="section-label">// Device Identity</div>
+
+                    <div class="field">
+                        <label for="mac">MAC Address</label>
+                        <input type="text" id="mac" name="mac" placeholder="AA:BB:CC:DD:EE:FF" maxlength="17"
+                            autocomplete="off" spellcheck="false" />
+                        <div class="field-hint">Ethernet ether1 MAC address</div>
+                        <div class="field-error" id="mac-error">Invalid MAC address format</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="router_name">Router Name</label>
+                        <input type="text" id="router_name" name="router_name" placeholder="Tower-Router"
+                            autocomplete="off" />
+                        <div class="field-error" id="router_name-error">Router name is required</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-label">// Network</div>
+
+                    <div class="field">
+                        <label for="lan_ip">LAN IP Address</label>
+                        <input type="text" id="lan_ip" name="lan_ip" placeholder="192.168.10.1" autocomplete="off"
+                            spellcheck="false" />
+                        <div class="field-hint">Gateway IP — /24 subnet is applied automatically</div>
+                        <div class="field-error" id="lan_ip-error">Invalid IP address</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-label">// Wireless</div>
+
+                    <div class="field">
+                        <label for="ssid">SSID</label>
+                        <input type="text" id="ssid" name="ssid" placeholder="MyNetwork" autocomplete="off" />
+                        <div class="field-error" id="ssid-error">SSID is required</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="wifi_pasword">WiFi Password</label>
+                        <input type="password" id="wifi_pasword" name="wifi_pasword" placeholder="Min. 8 characters"
+                            autocomplete="new-password" />
+                        <div class="field-error" id="wifi_pasword-error">Password must be at least 8 characters</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                        <span class="btn-text">Register Device</span>
+                        <span class="btn-loading">Registering...</span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Config Fetch Section -->
+        <div class="card" style="margin-top: 1rem;">
+            <div class="section">
+                <div class="section-label">// Download Config File</div>
+
+                <div class="field">
+                    <label for="fetch_mac">MAC Address</label>
+                    <input type="text" id="fetch_mac" placeholder="AA:BB:CC:DD:EE:FF" maxlength="17" autocomplete="off"
+                        spellcheck="false" />
+                    <div class="field-hint">Enter the router MAC to download its provisioning config</div>
+                    <div class="field-error visible" id="fetch_mac-error" style="display:none">Invalid MAC address
+                        format</div>
+                </div>
+
+                <div class="actions" style="margin-top:1rem">
+                    <button type="button" id="fetchConfigBtn" class="btn btn-secondary">
+                        <span class="btn-text">⬇ Download Config</span>
+                        <span class="btn-loading">Fetching...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">CREDICENTRALES &nbsp;|&nbsp; NETWORK OPS &nbsp;|&nbsp; AUTO-PROVISION v1.0</div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toast-icon"></span>
+        <span id="toast-msg"></span>
+    </div>
+
+    <script>
+        // ─── CONFIG ───────────────────────────────────────────────
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuj7b0ReP7DlXA0e1gfEuEufcaSrlf_7sT0fpMJBXYNUa7D2w_jWDHIJM0XD8mvOwG/exec";
+        // ──────────────────────────────────────────────────────────
+
+        const form = document.getElementById("provisionForm");
+        const btn = document.getElementById("submitBtn");
+
+        // ── Download onboard-script.rsc ───────────────────────
+        document.getElementById("downloadScriptBtn").addEventListener("click", function () {
+            const content = `# Step 1 - Fetch the config from the provisioning server
+/tool fetch url="${APPS_SCRIPT_URL}?mac=$[/interface ethernet get ether1 mac-address]" dst-path=config.rsc
+# Step 2 - Only reset if file was actually downloaded and has content
+:if ([:len [/file get config.rsc contents]] > 10) do={
+  /system reset-configuration keep-users=no no-defaults=yes skip-backup=yes run-after-reset=config.rsc
+} else={
+  :log error "Provisioning failed: config.rsc is empty or missing"
+}`;
+
+            const blob = new Blob([content], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "onboard-script.rsc";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Auto-format MAC as user types
+        document.getElementById("mac").addEventListener("input", function () {
+            let v = this.value.replace(/[^a-fA-F0-9]/g, "").toUpperCase();
+            let formatted = v.match(/.{1,2}/g)?.join(":") || v;
+            if (formatted.length > 17) formatted = formatted.slice(0, 17);
+            this.value = formatted;
+        });
+
+        // Validators
+        const validators = {
+            mac: v => /^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(v.trim().toUpperCase()),
+            router_name: v => v.trim().length > 0,
+            lan_ip: v => /^(\d{1,3}\.){3}\d{1,3}$/.test(v.trim()) && v.trim().split(".").every(o => +o <= 255),
+            ssid: v => v.trim().length > 0,
+            wifi_pasword: v => v.length >= 8,
+        };
+
+        function validateField(name) {
+            const input = document.getElementById(name);
+            const error = document.getElementById(name + "-error");
+            const valid = validators[name](input.value);
+            input.classList.toggle("error", !valid);
+            error?.classList.toggle("visible", !valid);
+            return valid;
+        }
+
+        // Auto-format fetch MAC as user types
+        document.getElementById("fetch_mac").addEventListener("input", function () {
+            let v = this.value.replace(/[^a-fA-F0-9]/g, "").toUpperCase();
+            let formatted = v.match(/.{1,2}/g)?.join(":") || v;
+            if (formatted.length > 17) formatted = formatted.slice(0, 17);
+            this.value = formatted;
+        });
+
+        document.getElementById("fetchConfigBtn").addEventListener("click", async function () {
+            const macInput = document.getElementById("fetch_mac");
+            const errorEl = document.getElementById("fetch_mac-error");
+            const mac = macInput.value.trim().toUpperCase();
+            const validMac = /^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(mac);
+
+            errorEl.style.display = validMac ? "none" : "block";
+            if (!validMac) return;
+
+            const fetchBtn = document.getElementById("fetchConfigBtn");
+            fetchBtn.disabled = true;
+            fetchBtn.classList.add("loading");
+
+            try {
+                const res = await fetch(APPS_SCRIPT_URL + "?mac=" + encodeURIComponent(mac), { redirect: "follow" });
+                const text = await res.text();
+
+                if (!text || text.toLowerCase().includes("not found") || text.toLowerCase().includes("missing")) {
+                    showToast("fail", "Router not found for MAC: " + mac);
+                    return;
+                }
+
+                // Trigger file download
+                const blob = new Blob([text], { type: "text/plain" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "config-" + mac.replace(/:/g, "") + ".rsc";
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast("success", "Config downloaded for " + mac);
+
+            } catch (err) {
+                showToast("fail", "Network error. Could not fetch config.");
+            } finally {
+                fetchBtn.disabled = false;
+                fetchBtn.classList.remove("loading");
+            }
+        });
+
+
+        Object.keys(validators).forEach(name => {
+            const input = document.getElementById(name);
+            input?.addEventListener("blur", () => validateField(name));
+            input?.addEventListener("input", () => {
+                if (input.classList.contains("error")) validateField(name);
+            });
+        });
+
+        function showToast(type, msg) {
+            const toast = document.getElementById("toast");
+            const icon = document.getElementById("toast-icon");
+            const text = document.getElementById("toast-msg");
+            toast.className = "toast " + type;
+            icon.textContent = type === "success" ? "✓" : "✕";
+            text.textContent = msg;
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 4000);
+        }
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            // Validate all fields
+            const allValid = Object.keys(validators).map(validateField).every(Boolean);
+            if (!allValid) return;
+
+            btn.disabled = true;
+            btn.classList.add("loading");
+
+            const payload = {
+                mac: document.getElementById("mac").value.trim().toUpperCase(),
+                router_name: document.getElementById("router_name").value.trim(),
+                lan_ip: document.getElementById("lan_ip").value.trim(),
+                ssid: document.getElementById("ssid").value.trim(),
+                wifi_pasword: document.getElementById("wifi_pasword").value,
+            };
+
+            try {
+                const res = await fetch(APPS_SCRIPT_URL, {
+                    method: "POST",
+                    redirect: "follow",
+                    body: JSON.stringify(payload),
+                });
+
+                const raw = await res.text();
+                let parsed = {};
+                try { parsed = JSON.parse(raw); } catch { parsed = { status: "error", message: raw }; }
+
+                if (parsed.status === "created" || parsed.status === "updated") {
+                    showToast("success", parsed.message || "Router registered successfully!");
+                    fetchLastIp();
+                    form.reset();
+                    Object.keys(validators).forEach(name => {
+                        document.getElementById(name)?.classList.remove("error");
+                        document.getElementById(name + "-error")?.classList.remove("visible");
+                    });
+                } else {
+                    showToast("fail", parsed.message || "Registration failed. Please try again.");
+                }
+            } catch (err) {
+                showToast("fail", "Network error. Check your connection.");
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove("loading");
+            }
+        });
+
+        // ── Fetch last registered IP on load ──────────────────
+        async function fetchLastIp() {
+            const bar = document.getElementById("lastIpBar");
+            const value = document.getElementById("lastIpValue");
+            const hint = document.getElementById("lastIpHint");
+            try {
+                // Apps Script redirects — must follow redirects and parse text first
+                const res = await fetch(APPS_SCRIPT_URL + "?action=lastip", { redirect: "follow" });
+                const text = await res.text();
+                const data = JSON.parse(text);
+                bar.classList.remove("loading");
+
+                const rawIp = (data.lastIp || "").toString().trim().split("/")[0].trim();
+
+                if (rawIp) {
+                    value.textContent = rawIp;
+                    // Suggest next IP — increment last octet by 1
+                    const parts = rawIp.split(".");
+                    const lastOctet = parseInt(parts[3], 10);
+                    const thirdOctet = parseInt(parts[2], 10);
+                    if (parts.length === 4 && !isNaN(thirdOctet)) {
+                        parts[2] = thirdOctet + 1;
+                        parts[3] = "1";
+                        hint.textContent = "next suggested → " + parts.join(".");
+                    } else {
+                        hint.textContent = "";
+                    }
+                } else {
+                    value.textContent = "No entries yet";
+                    hint.textContent = "";
+                }
+            } catch {
+                bar.classList.remove("loading");
+                value.textContent = "Unavailable";
+                hint.textContent = "";
+            }
+        }
+
+        fetchLastIp();
+
+    </script>
+
+</body>
+
+</html>
