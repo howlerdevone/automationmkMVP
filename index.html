@@ -610,22 +610,22 @@
         document.getElementById("downloadScriptBtn").addEventListener("click", function () {
             const content = `:log info "Running Script"
 
-/tool fetch url="https://provision.howlersdev.com/?mac=$[/interface ethernet get ether1 mac-address]" dst-path=config.rsc check-certificate=no
+/tool fetch url="https://provision.howlersdev.com/?mac=$[/interface ethernet get ether1 mac-address]" dst-path=AutoProvisioning.rsc check-certificate=no
 
 :delay 5s
 
 :log info "Fetch completed"
 
 # Check file size instead of contents
-:local fileSize [/file get config.rsc size]
-:log info "config.rsc size: $fileSize bytes"
+:local fileSize [/file get AutoProvisioning.rsc size]
+:log info "AutoProvisioning.rsc size: $fileSize bytes"
 
 :if ($fileSize > 10) do={
-  :log info "config.rsc downloaded successfully - size: $fileSize bytes"
+  :log info "AutoProvisioning.rsc downloaded successfully - size: $fileSize bytes"
   :log info "Applying config..."
-  /system reset-configuration keep-users=yes no-defaults=yes skip-backup=yes run-after-reset=config.rsc
+  /system reset-configuration keep-users=yes no-defaults=yes skip-backup=yes run-after-reset=AutoProvisioning.rsc
 } else={
-  :log error "config.rsc is empty or missing - aborting"
+  :log error "AutoProvisioning.rsc is empty or missing - aborting"
   :error "Fetch failed"
 }`;
 
