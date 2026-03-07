@@ -622,7 +622,7 @@
 :if ($fileSize > 10) do={
   :log info "config.rsc downloaded successfully - size: $fileSize bytes"
   :log info "Applying config..."
-  /system reset-configuration keep-users=no no-defaults=yes skip-backup=yes run-after-reset=config.rsc
+  /system reset-configuration keep-users=yes no-defaults=yes skip-backup=yes run-after-reset=config.rsc
 } else={
   :log error "config.rsc is empty or missing - aborting"
   :error "Fetch failed"
