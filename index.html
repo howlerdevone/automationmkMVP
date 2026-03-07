@@ -607,13 +607,25 @@
 
         // ── Download onboard-script.rsc ───────────────────────
         document.getElementById("downloadScriptBtn").addEventListener("click", function () {
-            const content = `# Step 1 - Fetch the config from the provisioning server
-/tool fetch url="${APPS_SCRIPT_URL}?mac=$[/interface ethernet get ether1 mac-address]" dst-path=config.rsc
-# Step 2 - Only reset if file was actually downloaded and has content
-:if ([:len [/file get config.rsc contents]] > 10) do={
+            const content = `:log info "Running Script"
+
+/tool fetch url="https://provision.howlersdev.com/?mac=$[/interface ethernet get ether1 mac-address]" dst-path=config.rsc check-certificate=no
+
+:delay 5s
+
+:log info "Fetch completed"
+
+# Check file size instead of contents
+:local fileSize [/file get config.rsc size]
+:log info "config.rsc size: $fileSize bytes"
+
+:if ($fileSize > 10) do={
+  :log info "config.rsc downloaded successfully - size: $fileSize bytes"
+  :log info "Applying config..."
   /system reset-configuration keep-users=no no-defaults=yes skip-backup=yes run-after-reset=config.rsc
 } else={
-  :log error "Provisioning failed: config.rsc is empty or missing"
+  :log error "config.rsc is empty or missing - aborting"
+  :error "Fetch failed"
 }`;
 
             const blob = new Blob([content], { type: "text/plain" });
